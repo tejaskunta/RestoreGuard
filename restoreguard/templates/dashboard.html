@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+{% if refresh %}<meta http-equiv="refresh" content="{{ refresh }}">{% endif %}
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RestoreGuard</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<div class="sheet">
+
+  <header>
+    <div>
+      <h1>RestoreGuard</h1>
+      <div class="sub">Backup restore verification</div>
+    </div>
+    <div class="stamp {{ status.state }}">{{ status.state|upper }}</div>
+  </header>
+
+  {% set last = status.last_run %}
+  <div class="figs">
+    <div class="fig">
+      <b>{{ (last.checks|selectattr('passed')|list|length) if last else '—' }}<small>/4</small></b>
+      <span>checks passed</span></div>
+    <div class="fig"><b>{{ last.duration_seconds if last else '—' }}<small>s</small></b>
+      <span>duration</span></div>
+    <div class="fig">
+      <b>{{ ((last.dump_bytes / 1024)|round(0)|int) if last and last.dump_bytes else '—' }}<small>KB</small></b>
+      <span>backup size</span></div>
+    <div class="fig"><b>{{ 'yes' if last and last.scratch_dropped else 'no' }}</b>
+      <span>scratch dropped</span></div>
+  </div>
+
+  {% if last %}
+    <h2>Latest check breakdown</h2>
+    <ul class="checks">
+      {% for c in last.checks %}
+      <li>
+        <span class="mark {{ 'pass' if c.passed else 'fail' }}">{{ 'PASS' if c.passed else 'FAIL' }}</span>
+        <span>{{ c.name }}</span>
+        <span class="detail">{{ c.detail }}</span>
+      </li>
+      {% endfor %}
+    </ul>
+    {% if last.error %}<p class="empty">Error: {{ last.error }}</p>{% endif %}
+  {% else %}
+    <p class="empty">No runs recorded yet. Run <code>python -m restoreguard.verify</code>.</p>
+  {% endif %}
+
+  <h2>Run ledger — last 10</h2>
+  {% if runs %}
+  <table>
+    <thead><tr>
+      <th>Started (UTC)</th><th>Outcome</th><th>Checks</th><th>Duration</th><th>Scratch</th>
+    </tr></thead>
+    <tbody>
+    {% for r in runs %}
+      <tr>
+        <td>{{ (r.started_at or '')[:19].replace('T', ' ') }}</td>
+        <td><span class="chip {{ 'pass' if r.outcome == 'PASS' else 'fail' }}">{{ r.outcome }}</span></td>
+        <td>{{ r.checks|selectattr('passed')|list|length }}/{{ r.checks|length }}</td>
+        <td>{{ r.duration_seconds }}s</td>
+        <td>{% if r.scratch_dropped %}<span class="chip pass">dropped</span>
+            {% else %}<span class="chip warn">left behind</span>{% endif %}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+    <p class="empty">Nothing logged yet.</p>
+  {% endif %}
+
+  <footer>source · logs/runs.jsonl · auto-refresh {{ refresh }}s</footer>
+</div>
+</body>
+</html>

@@ -1,0 +1,8 @@
+.venv/
+.env
+logs/*.jsonl
+logs/cron.log
+__pycache__/
+*.pyc
+.pytest_cache/
+.DS_Store

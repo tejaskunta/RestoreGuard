@@ -1,0 +1,313 @@
+/* ==========================================================================
+   RestoreGuard dashboard — "inspection certificate"
+
+   One bold element (the verdict stamp), hairline rules, monospace numerals.
+   Colour appears exactly once: the pass/fail signal.
+
+   Order of this file:
+     1. Design tokens
+     2. Base / reset
+     3. Page shell
+     4. Page header + verdict stamp
+     5. Figure strip
+     6. Section headings
+     7. Check breakdown list
+     8. Ledger table
+     9. Status chips
+    10. Misc (code, empty state, footer)
+    11. Responsive
+   ========================================================================== */
+
+
+/* --------------------------------------------------------------------------
+   1. Design tokens
+   -------------------------------------------------------------------------- */
+
+:root {
+  /* surfaces */
+  --paper: #f6f7f4;
+  --ink:   #14161a;
+  --mute:  #6b6f66;
+  --rule:  #d9dad4;
+
+  /* signal — used for nothing else */
+  --pass: #1f7a4d;
+  --fail: #b3261e;
+
+  /* type */
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+
+
+/* --------------------------------------------------------------------------
+   2. Base / reset
+   -------------------------------------------------------------------------- */
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 48px 20px;
+
+  background: var(--paper);
+  color: var(--ink);
+  font: 15px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+
+/* --------------------------------------------------------------------------
+   3. Page shell
+   -------------------------------------------------------------------------- */
+
+.sheet {
+  max-width: 820px;
+  margin: 0 auto;
+  padding: 40px 44px;
+
+  background: #fff;
+  border: 1px solid var(--rule);
+  box-shadow:
+    0 1px 0 rgba(0, 0, 0, .04),
+    0 12px 40px -24px rgba(0, 0, 0, .3);
+}
+
+
+/* --------------------------------------------------------------------------
+   4. Page header + verdict stamp
+   -------------------------------------------------------------------------- */
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 24px;
+  flex-wrap: wrap;
+
+  padding-bottom: 16px;
+  border-bottom: 2px solid var(--ink);
+}
+
+h1 {
+  margin: 0;
+
+  font: 600 22px/1.2 var(--mono);
+  letter-spacing: .24em;
+  text-transform: uppercase;
+}
+
+.sub {
+  margin-top: 6px;
+
+  color: var(--mute);
+  font: 12px var(--mono);
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+
+.stamp {
+  padding: 10px 18px;
+
+  border: 3px double currentColor;
+  border-radius: 4px;
+
+  font: 700 30px/1 var(--mono);
+  letter-spacing: .16em;
+  white-space: nowrap;
+
+  transform: rotate(-3deg);
+  opacity: .92;
+}
+.stamp.pass    { color: var(--pass); }
+.stamp.fail    { color: var(--fail); }
+.stamp.unknown { color: var(--mute); }
+
+
+/* --------------------------------------------------------------------------
+   5. Figure strip
+   -------------------------------------------------------------------------- */
+
+.figs {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px;
+
+  margin: 28px 0;
+
+  background: var(--rule);      /* shows through the 1px grid gaps */
+  border: 1px solid var(--rule);
+}
+
+.fig {
+  padding: 16px 18px;
+  background: #fff;
+}
+
+.fig b {
+  display: block;
+
+  font: 600 26px/1.1 var(--mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.fig small {
+  margin-left: 2px;
+  color: var(--mute);
+  font-size: 14px;
+}
+
+.fig span {
+  display: block;
+  margin-top: 6px;
+
+  color: var(--mute);
+  font-size: 11px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
+
+/* --------------------------------------------------------------------------
+   6. Section headings
+   -------------------------------------------------------------------------- */
+
+h2 {
+  margin: 32px 0 12px;
+
+  color: var(--mute);
+  font: 600 12px var(--mono);
+  letter-spacing: .16em;
+  text-transform: uppercase;
+}
+
+
+/* --------------------------------------------------------------------------
+   7. Check breakdown list
+   -------------------------------------------------------------------------- */
+
+ul.checks {
+  margin: 0;
+  padding: 0;
+
+  list-style: none;
+  border-top: 1px solid var(--rule);
+}
+
+ul.checks li {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+
+  padding: 11px 2px;
+
+  border-bottom: 1px solid var(--rule);
+  font: 13px var(--mono);
+}
+
+.mark {
+  min-width: 52px;
+  font-weight: 700;
+  letter-spacing: .08em;
+}
+.mark.pass { color: var(--pass); }
+.mark.fail { color: var(--fail); }
+
+.detail {
+  margin-left: auto;
+  text-align: right;
+  color: var(--mute);
+}
+
+
+/* --------------------------------------------------------------------------
+   8. Ledger table
+   -------------------------------------------------------------------------- */
+
+table {
+  width: 100%;
+
+  border-collapse: collapse;
+  font: 12.5px var(--mono);
+}
+
+th {
+  padding: 8px 10px;
+
+  border-bottom: 1px solid var(--ink);
+  color: var(--mute);
+  font-size: 11px;
+  letter-spacing: .1em;
+  text-align: left;
+  text-transform: uppercase;
+}
+
+td {
+  padding: 9px 10px;
+
+  border-bottom: 1px solid var(--rule);
+  font-variant-numeric: tabular-nums;
+}
+
+tr:last-child td {
+  border-bottom: none;
+}
+
+
+/* --------------------------------------------------------------------------
+   9. Status chips
+   -------------------------------------------------------------------------- */
+
+.chip {
+  display: inline-block;
+  padding: 2px 8px;
+
+  border-radius: 999px;
+  font-size: 10.5px;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+.chip.pass { background: #e6f2ea; color: var(--pass); }
+.chip.fail { background: #f7e5e3; color: var(--fail); }
+.chip.warn { background: #fbeede; color: #8a5a12; }
+
+
+/* --------------------------------------------------------------------------
+   10. Misc
+   -------------------------------------------------------------------------- */
+
+code {
+  padding: 1px 5px;
+  border-radius: 3px;
+
+  background: #f1f2ee;
+  font: 13px var(--mono);
+}
+
+.empty {
+  padding: 26px 2px;
+
+  color: var(--mute);
+  font: 13px var(--mono);
+}
+
+footer {
+  margin-top: 36px;
+  padding-top: 14px;
+
+  border-top: 1px solid var(--rule);
+  color: var(--mute);
+  font: 11px var(--mono);
+  letter-spacing: .06em;
+}
+
+
+/* --------------------------------------------------------------------------
+   11. Responsive
+   -------------------------------------------------------------------------- */
+
+@media (max-width: 620px) {
+  .figs  { grid-template-columns: repeat(2, 1fr); }
+  .sheet { padding: 28px 22px; }
+}

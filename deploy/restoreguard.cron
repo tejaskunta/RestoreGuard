@@ -1,0 +1,15 @@
+# RestoreGuard — crontab entry.
+#
+# Install with:   crontab -e
+# Check with:     crontab -l
+# Remove with:    crontab -r
+#
+# This verifies the backup every 30 minutes. cron runs with a minimal
+# environment (no shell profile), so every path here is absolute and the
+# Postgres client is pinned by PG_CLIENT_BIN inside the project's .env.
+#
+# Local macOS (current machine):
+*/30 * * * * cd /Users/tejaskunta/RestoreGuard && .venv/bin/python -m restoreguard.verify >> logs/cron.log 2>&1
+
+# On EC2 the project path differs — adjust the `cd` target, e.g.:
+# */30 * * * * cd /opt/restoreguard && .venv/bin/python -m restoreguard.verify >> logs/cron.log 2>&1

@@ -1,0 +1,58 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    # A real Postgres 16 so the unit tests could be extended to an end-to-end
+    # run later. The service major (16) deliberately matches the version the
+    # app is pinned to everywhere else — see verify.check_client_version().
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: rgadmin
+          POSTGRES_PASSWORD: devpass
+          POSTGRES_DB: appdb
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U rgadmin -d appdb"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      SOURCE_DB_HOST: 127.0.0.1
+      SOURCE_DB_PORT: 5432
+      SOURCE_DB_NAME: appdb
+      SOURCE_DB_USER: rgadmin
+      SOURCE_DB_PASSWORD: devpass
+      FRESH_MAX_AGE_MINUTES: 60
+      DISCORD_WEBHOOK_URL: ""
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      # Ubuntu runners ship the pg_dump/pg_restore client already; assert the
+      # major matches the service so a version drift fails loudly here rather
+      # than mysteriously at restore time.
+      - name: Check Postgres client major version
+        run: pg_dump --version
+
+      - name: Run tests
+        run: python -m pytest -q
