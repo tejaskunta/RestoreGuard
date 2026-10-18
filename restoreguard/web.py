@@ -75,3 +75,8 @@ def dashboard():
         runs=read_runs(limit=10),
         refresh=30,          # seconds; 0 disables the meta refresh
     )
+
+
+if __name__ == "__main__":
+    # Port 5001, not 5000 — 5000 is taken by an unrelated container.
+    app.run(host="127.0.0.1", port=5001, debug=False)

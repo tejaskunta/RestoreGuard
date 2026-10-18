@@ -250,7 +250,7 @@ by re-stamping `occurred_at`, standing in for the writes a real source keeps
 doing.
 
 ### `tests/test_restoreguard.py`
-22 tests, no database needed. The checks take a connection and return a dict,
+20 tests, no database needed. The checks take a connection and return a dict,
 so the tests hand them a **fake connection** scripted with chosen values. The
 web tests point `LOG_PATH` at a temp file via `monkeypatch`. Covers the
 version guard, all four checks (including the defensive paths), the log
@@ -261,7 +261,7 @@ Runs the tests on Python 3.12 against a `postgres:16` service — deliberately
 the same major as production, so a version drift fails in CI.
 
 ### `demo.sh`
-Plays the five scenarios (healthy → corrupt → missing table → stale → reset)
+Plays the three scenarios (healthy → corrupt → stale) plus a final reset,
 back-to-back for the live demo.
 
 ---
@@ -316,28 +316,24 @@ tail -f logs/runs.jsonl
 **Terminal 2** — run everything:
 
 ```
-./demo.sh
+make demo
 ```
 
-Narration as the five scenarios scroll by:
+Narration as the three scenarios scroll by:
 
 1. **Healthy** — *"Four PASS. This is the normal path: dump, restore, four
    checks, scratch dropped."*
 2. **Corrupt** — *"I truncated the dump to 1KB. It's an ERROR — and notice it
    still says `dropped`. Even when the restore explodes, the cleanup ran.
    That's the `finally` block."*
-3. **Missing table** — *"I dropped a table from the source. All four checks
-   FAIL cleanly — it didn't crash, the missing table became a readable failure.
-   That's why each check returns a verdict instead of raising."*
-4. **Stale** — *"This is the important one. Three PASS, one FAIL — only
+3. **Stale** — *"This is the important one. Three PASS, one FAIL — only
    freshness. The pipeline was perfect; the **data** was bad. No other check
    catches a frozen source."*
-5. **Reset** — *"And it recovers. Green again."*
+4. **Reset** — *"And it recovers. Green again."*
 
 Then point at the summary the script prints:
 
-> **"12 records, and `every run dropped its scratch DB: True` — including the
-> two ERRORs."**
+> **"every run dropped its scratch DB: True" — including the ERROR runs.**
 
 Finally, show the frontend:
 

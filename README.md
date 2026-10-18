@@ -71,27 +71,32 @@ RestoreGuard/
 ├── demo.sh
 ├── requirements.txt
 ├── .env.example
+├── docker-compose.yml       # postgres 16 on :5433, schema auto-seeds
+├── Makefile                 # up / run / demo / web / test
 └── .github/workflows/ci.yml
 ```
 
+## Quick start
+
+    make up      # postgres 16 on :5433, schema auto-seeds on first boot
+    make run     # one verification run
+    make demo    # three scenarios: PASS / ERROR / FAIL
+    make web     # dashboard on http://127.0.0.1:5001
+    make test    # 20 tests, no database required
+
 ## Setup
 
-Postgres client major **must equal** the server major (see *The version trap*
-below). Local dev uses a Postgres 16 container:
+Prerequisites: Docker, Python 3.12, and a Postgres **client** whose major
+matches the server (see *The version trap*).
 
-```
-docker run -d --name rgdev -e POSTGRES_USER=rgadmin -e POSTGRES_PASSWORD=devpass -e POSTGRES_DB=appdb -p 5433:5432 postgres:16
-brew install postgresql@16
-python3.12 -m venv .venv
-.venv/bin/pip install -r requirements.txt
-PGPASSWORD=devpass psql -h 127.0.0.1 -p 5433 -U rgadmin -d appdb -f sql/schema.sql
-cp .env.example .env        # then edit PG_CLIENT_BIN and the DB values
-```
+    make up                              # starts postgres 16, seeds schema
+    python3.12 -m venv .venv
+    .venv/bin/pip install -r requirements.txt
+    cp .env.example .env                 # edit if your port differs
 
-> **Port drift:** on this machine the database is on **5433**, not 5432 —
-> 5432 belongs to another project (`aeroshield-db`). Never assume the default
-> port. Everything reads the port from `.env` (`SOURCE_DB_PORT`), so it is
-> configured in exactly one place.
+`make up` uses `docker-compose.yml`. Postgres runs `sql/schema.sql` from
+`/docker-entrypoint-initdb.d/` **on first boot only**, so the database seeds
+itself. `make clean` (`docker compose down -v`) wipes the volume to re-seed.
 
 ## Running it
 
@@ -111,20 +116,18 @@ sync. `verify.py` writes it; `web.py` reads it.
 
 ## The demo
 
-`demo.sh` plays all five scenarios back-to-back so you can show the tool
+`make demo` plays all three scenarios back-to-back so you can show the tool
 changing its mind:
 
 ```
-./demo.sh
+make demo
 ```
 
 | Scenario | Trigger | Outcome |
 |---|---|---|
-| Healthy | reseed → run | `4 PASS` |
+| Healthy | reseed → run | `PASS` |
 | Corrupt backup | `RESTOREGUARD_DEMO_CORRUPT=1` | `ERROR` (scratch still dropped) |
-| Missing table | `DROP TABLE order_events CASCADE` | `4 FAIL` |
-| Stale source | `UPDATE ... now() - interval '7 days'` | `1 FAIL` (freshness only) |
-| Reset | `sql/refresh.sql` → run | `4 PASS` |
+| Stale source | `UPDATE ... now() - interval '7 days'` | `FAIL` (freshness only) |
 
 Watch the ledger grow in a second terminal with `tail -f logs/runs.jsonl`.
 
@@ -146,7 +149,7 @@ See `deploy/restoreguard.cron`. Notes:
 ## Tests & CI
 
 ```
-.venv/bin/python -m pytest -q        # 22 tests, no database required
+.venv/bin/python -m pytest -q        # 20 tests, no database required
 ```
 
 The tests cover the version guard, the four checks, the log reader, and both

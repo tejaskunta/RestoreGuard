@@ -1,0 +1,21 @@
+services:
+  db:
+    image: postgres:16
+    container_name: rgdev
+    environment:
+      POSTGRES_USER: rgadmin
+      POSTGRES_PASSWORD: devpass
+      POSTGRES_DB: appdb
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./sql/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U rgadmin -d appdb"]
+      interval: 2s
+      timeout: 3s
+      retries: 15
+
+volumes:
+  pgdata:
